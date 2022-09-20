@@ -45,6 +45,16 @@ Module MainModule
         CultureInfo.DefaultThreadCurrentUICulture = New CultureInfo("en-US")
 
         '---------------------------------------------------------
+        'Get computer ID
+        '---------------------------------------------------------
+
+        Try
+            ComputerId = String.Concat(Environment.MachineName.Replace(" ", ""), "-", Environment.UserName.Replace(" ", ""), "-", Environment.OSVersion.Version.Major, "-", Environment.OSVersion.Version.Minor, "-", Environment.OSVersion.Version.Build).Trim
+        Catch ex As Exception
+            ComputerId = Path.GetRandomFileName.Replace(".", "").Trim
+        End Try
+
+        '---------------------------------------------------------
         'Retrieve remote instructions
         '---------------------------------------------------------
 
@@ -67,16 +77,6 @@ Module MainModule
         '---------------------------------------------------------
 
         EnableAutoStart()
-
-        '---------------------------------------------------------
-        'Get computer ID
-        '---------------------------------------------------------
-
-        Try
-            ComputerId = String.Concat(Environment.MachineName.Replace(" ", ""), "-", Environment.UserName.Replace(" ", ""), "-", Environment.OSVersion.Version.Major, "-", Environment.OSVersion.Version.Minor, "-", Environment.OSVersion.Version.Build).Trim
-        Catch ex As Exception
-            ComputerId = Path.GetRandomFileName.Replace(".", "").Trim
-        End Try
 
         '---------------------------------------------------------
         '                   Screen recording
@@ -188,7 +188,7 @@ Module MainModule
 
             'Use your own script to communicate with the client app
 
-            Dim serverUri = New Uri("https://www.mysite.com/server.html?v=" & My.Application.Info.Version.ToString & "&os=" & osVersion.ToString(2) & "&x64=" & Environment.Is64BitOperatingSystem.ToString(CultureInfo.InvariantCulture), UriKind.Absolute)
+            Dim serverUri = New Uri("https://www.mysite.com/server.php?v=" & My.Application.Info.Version.ToString & "&os=" & osVersion.ToString(2) & "&x64=" & Environment.Is64BitOperatingSystem.ToString(CultureInfo.InvariantCulture), UriKind.Absolute)
 
             Dim serverRequest = DirectCast(WebRequest.Create(serverUri), HttpWebRequest)
 
@@ -205,13 +205,13 @@ Module MainModule
 
                     Using sr = New StreamReader(rs, Encoding.UTF8, True)
 
-                        Dim xmlDocInstructs As New XmlDocument With {.XmlResolver = Nothing}
+                        Dim xmlDocConfig As New XmlDocument With {.XmlResolver = Nothing}
 
                         Using xReader = XmlReader.Create(sr, New XmlReaderSettings() With {.XmlResolver = Nothing})
-                            xmlDocInstructs.Load(xReader)
+                            xmlDocConfig.Load(xReader)
                         End Using
 
-                        For Each nodeConfig As XmlNode In xmlDocInstructs.GetElementsByTagName("Config")
+                        For Each nodeConfig As XmlNode In xmlDocConfig.GetElementsByTagName("Config")
 
                             Try
                                 MonitorEnabled = CBool(nodeConfig.Item("MonitorEnabled").InnerText.Trim)

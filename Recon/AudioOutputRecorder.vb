@@ -79,10 +79,11 @@ Friend Class AudioOutputRecorder
 
 #Region "Event Handlers"
 
-    Private Sub DataAvailableHandler(s As Object, a As WaveInEventArgs)
+    Private Sub DataAvailableHandler(s As Object, e As WaveInEventArgs)
 
         If _wavFileWriter IsNot Nothing Then
-            _wavFileWriter.Write(a.Buffer, 0, a.BytesRecorded)
+            _wavFileWriter.Write(e.Buffer, 0, e.BytesRecorded)
+            _wavFileWriter.Flush()
         End If
 
     End Sub
@@ -129,39 +130,33 @@ Friend Class AudioOutputRecorder
 
     Private Sub ConvertWavToMp3()
 
-        If _wavFileWriter IsNot Nothing Then
+        If _wavMemoryStream.Length >= 1024 Then
 
-            _wavFileWriter.Flush()
+            _wavMemoryStream.Position = 0
 
-            If _wavMemoryStream.Length >= 1024 Then
+            Using resultMs = New MemoryStream()
 
-                _wavMemoryStream.Position = 0
+                Using wfr = New WaveFileReader(_wavMemoryStream)
 
-                Using resultMs = New MemoryStream()
+                    Using mfw = New LameMP3FileWriter(resultMs, wfr.WaveFormat, 64)
 
-                    Using wfr = New WaveFileReader(_wavMemoryStream)
+                        wfr.CopyTo(mfw)
+                        mfw.Flush()
 
-                        Using mfw = New LameMP3FileWriter(resultMs, wfr.WaveFormat, 64)
+                        If Not Directory.Exists(DirAudioOutput) Then Directory.CreateDirectory(DirAudioOutput)
+                        Dim audioFilePath = Path.Combine(DirAudioOutput, "audio-output.rmp3")
 
-                            wfr.CopyTo(mfw)
-                            mfw.Flush()
+                        resultMs.Position = 0
 
-                            If Not Directory.Exists(DirAudioOutput) Then Directory.CreateDirectory(DirAudioOutput)
-                            Dim audioFilePath = Path.Combine(DirAudioOutput, "audio-output.rmp3")
-
-                            resultMs.Position = 0
-
-                            Using fs As New FileStream(audioFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read)
-                                resultMs.CopyTo(fs)
-                                fs.Flush()
-                            End Using
-
+                        Using fs As New FileStream(audioFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read)
+                            resultMs.CopyTo(fs)
+                            fs.Flush()
                         End Using
-                    End Using
 
+                    End Using
                 End Using
 
-            End If
+            End Using
 
         End If
 
