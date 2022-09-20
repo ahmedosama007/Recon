@@ -2,6 +2,9 @@
 ### Basic spyware that can secretly take screenshots and record the audio input and output of the target computer.
   
   
+  ![Reconnaissance](https://www.hackingloops.com/wp-content/uploads/2016/06/guy-with-binoculars-for-intro-photo.jpg)
+    
+      
 - Recon is a Windows Form app written in VB.NET targeting the .NET Framework 4.7.2
 - Recon takes a screenshot of the target computer desktop every 5 seconds, it saves screenshots in PNG format. The app uses [nQuant.Core.NETStandard](https://www.nuget.org/packages/nQuant.Core.NETStandard/1.0.0) and custom PNG encoder parameters to reduce the size of the generated PNG files thus optimizing the data upload speed.
 - Recon uses [NAudio](https://github.com/naudio/NAudio) to capture the audio input and output into WAV streams.
@@ -66,3 +69,5 @@ if ($uploadOk == 1) {
 
 ```
 - The app generates an ID for the target computer and sends it to the remote server; the ID consists of the machine name, user name, and OS version. The computer ID helps organize the uploaded data on the server.
+- The app disguises itself as conhost process, it uses a similar icon and file properties.
+- Recon acheives persistence by adding itself in *HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run* *HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce*
